@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test</title>
+  <style>
+    #ball{
+      position: absolute;
+      bottom: 223px;
+      left: 80px;
+      height: 25px;
+      width: 25px;
+      border-radius: 50%;
+      z-index: 1;
+    }
+    #ground {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 223px;
+      background-color: green; 
+    }
+    #inputs{
+      position: absolute;
+      bottom: 5%;
+      left: 40%;
+    }
+
+    #shooter{
+      position: absolute;
+      bottom:214px;
+      width: 150px;
+      height: 150px;
+    }
+  </style>
+</head>
+<body>
+  <img id="ball" src="ball.png" alt="ball">
+  <img id="shooter" src="Shooter.png" alt="Shooter">
+  <div id="ground"></div>
+  
+  <form id="inputs">
+    <label for="iVel" style="color: white;">Initial Velocity (m/s):</label><br>
+    <input type="number" min="0" max="38" id="iVel" name="iVel" value=""><br><br>
+    <label for="Ang" style="color: white;">Angle (DEG):</label><br>
+    <input type="number" min="0" max="90" id="Ang" name="Ang" value=""><br><br>
+    <button id="shoot" style="cursor:pointer; height: 20pt;">Shoot</button>
+    <button id="reset" style="cursor:pointer; height: 20pt;">Reset</button>
+  </form>
+
+  <div id="results" hidden>
+    <h4>Max Height(m): <span id="hmax" ></span></h4>
+    <h4>Distance covered(m): <span id="d" ></span></h4>
+    <h4>Time of Flight(sec): <span id="t"></span></h4>
+  </div>
+  
+
+  <script>
+    // var v = 50
+    var g = 9.81
+    // var Theta = 60
+    // var ThetaR = Theta*Math.PI/180
+    var xScale = 5
+
+
+    var o = document.querySelector("#ball");
+    var time=0
+    var move;
+    var x;
+    var y;
+    function updatePosition(vel, acc, angle, initialTime){      
+      time = (Date.now()-initialTime)/1000
+      y = vel*time*Math.sin(angle) - 0.5*acc*Math.pow(time,2);
+      x = vel*time*Math.cos(angle);
+      o.style.bottom = 223 + y*10 + "px";
+      o.style.left = 80 + x*10 + "px";
+      if(y < 0){
+        clearInterval(move);
+        document.querySelector("#shoot").removeAttribute("disabled");
+        document.querySelector("#t").textContent = Math.round((time + Number.EPSILON) * 100) / 100;
+        document.querySelector("#d").textContent = Math.round((x + Number.EPSILON) * 100) / 100;
+        document.querySelector("#hmax").textContent = Math.round((Math.pow(vel*Math.sin(angle),2)/(2*acc) + Number.EPSILON) * 100) / 100;
+        document.querySelector("#results").removeAttribute("hidden");
+      } 
+    }
+      
+    document.querySelector("#inputs").addEventListener("submit", function(e){
+      e.preventDefault();
+      var startTime = Date.now();
+      var v = document.querySelector("#iVel").value;
+      var ThetaR = document.querySelector("#Ang").value*Math.PI/180;
+      document.querySelector("#shoot").setAttribute("disabled", true);
+      move = setInterval(updatePosition,1, v, g, ThetaR, startTime)
+    })
+
+    document.querySelector("#reset").addEventListener("click", function(e){
+      e.preventDefault();
+      clearInterval(move);
+      document.querySelector("#shoot").removeAttribute("disabled");
+      document.querySelector("#results").setAttribute("hidden","");
+      o.style.bottom = "223px";
+      o.style.left = "80px"
+    })
+    
+  </script>
+</body>
+</html>
